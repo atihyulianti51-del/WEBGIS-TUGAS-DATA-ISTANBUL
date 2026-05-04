@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <title>WebGIS Kota Istanbul</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        .judul {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="judul">WebGIS Persebaran Data di Kota Istanbul, Turki</div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        var map = L.map('map').setView([41.0082, 28.9784], 11);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        fetch('data/Data_Kota_Istanbul_3.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng);
+                    },
+
+                    style: function (feature) {
+                        return {
+                            color: "blue",
+                            weight: 2,
+                            fillOpacity: 0.2
+                        };
+                    },
+
+                    onEachFeature: function (feature, layer) {
+                        let props = feature.properties;
+
+                        let popup = `
+              <b>Informasi Data</b><br>
+              Nama: ${props.name || 'Tidak ada'}<br>
+              Jenis: ${props.amenity || props.building || props.highway || '-'}
+            `;
+
+                        layer.bindPopup(popup);
+                    }
+                }).addTo(map);
+            })
+            .catch(error => {
+                console.log("GeoJSON gagal dimuat:", error);
+                alert("Data GeoJSON gagal dimuat. Cek nama file dan folder data.");
+            });
+    </script>
+</body>
+
+</html>
